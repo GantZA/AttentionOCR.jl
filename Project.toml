@@ -1,0 +1,4 @@
+name = "AttentionOCR"
+uuid = "28f111d0-6441-11e9-2151-f1334a5a4d12"
+authors = ["Michael Gant <michael.j.g.za@gmail.com>"]
+version = "0.1.0"
