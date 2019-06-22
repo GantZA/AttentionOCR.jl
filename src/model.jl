@@ -1,42 +1,38 @@
+using Flux
+using Flux: @epochs
+using CuArrays
+
+include("cnn.jl")
+include("get_labels.jl")
+include("batching.jl")
+include("seq2seq_model.jl")
+
+ATTN_NUM_HIDDEN = 128
+ATTN_NUM_LAYERS = 2
+TARGET_VOCAB_SIZE = 12
+BATCH_SIZE = 10
 
 
-max_image_width = 1300
-max_image_height = 75
-max_prediction_length = 19
-
-max_resized_width = ceil(Int,max_image_width / max_image_height * 32)
-
-encoder_size = ceil(Int,max_width/4)
-decoder_size = max_prediction_length + 2
-
-buckets = [encoder_size, decoder_size]
-
-height = param()
-height_float = param(32f0)
-typeof(height)
-
-
-function prepare_img(image)
-    # Resize the image to the maximum width and height
-    img = Float32.(image);
-    dims = size(img)
-
-    max_width = Int32(ceil(dims[2]/dims[1]) * 32)
-    max_height = Int32(ceil(max_resized_width/max_width) * 32)
-
-    if (max_resized_width >= max_width) & (dims[1] > 32)
-        img = imresize(img, 32, max_width)
-    else
-        img = imresize(img, 32, max_resized_width)
-    end
-    return img
+function cnn(cnn_model, data)
+    cnn_output = cnn_model.(gpu.(data))
+    return [hcat([cnn_output[i][:,j] for i in 1:BATCH_SIZE]...) for j in 1:512]
 end
 
-using Images
-using FileIO
-using Glob
+function model(cnn_model, encoder, decoder, x, y)
+    encoder_inputs = cnn(cnn_model, x)
+    label_inputs = gpu.([hcat([y[i][:,j] for i in 1:BATCH_SIZE]...) for j in 1:20])
+    total_loss = model_seq_2_seq(encoder, decoder, encoder_inputs, label_inputs)
+    return total_loss
+end
 
-img_names = glob("*.png", "data/phase_1/images/")
-image = load(img_names[154]);
-img = prepare_img(image)
-Gray.(img)
+mutable struct aocr_model
+    cnn
+    encoder
+    decoder
+end # struct
+
+function (a:aocr_model)(x, y, learning_rate, epochs)
+    model(x,y) = model(a.cnn_model, a.encoder, a.decoder, x, y)
+    opt = ADAM(learning_rate)
+    @epochs epochs Flux.train(model, params(a), zip(x,y), opt)
+end

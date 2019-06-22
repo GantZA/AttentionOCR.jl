@@ -1,5 +1,12 @@
 module AttentionOCR
+using JLD
 
-greet() = print("Hello World!")
+include("model.jl")
+include("save_images.jl")
+include("get_labels.jl")
+include("batching.jl")
+
+export aocr_model, stored_imgs, prepare_img, get_labels, batch, JLD.load,
+    build_cnn_network, Encoder, Decoder
 
 end # module
