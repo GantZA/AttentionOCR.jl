@@ -31,7 +31,7 @@ mutable struct aocr_model
     decoder
 end # struct
 
-function (a:aocr_model)(x, y, learning_rate, epochs)
+function (a::aocr_model)(x, y, learning_rate, epochs)
     model(x,y) = model(a.cnn_model, a.encoder, a.decoder, x, y)
     opt = ADAM(learning_rate)
     @epochs epochs Flux.train(model, params(a), zip(x,y), opt)
