@@ -1,5 +1,5 @@
 # AttentionOCR.jl
-(WIP) Julia and Flux adaptation of the python package aocr.py https://github.com/emedvedev/attention-ocr using Attention mechanism from https://github.com/merckxiaan/flux-seq2seq
+(WIP) Julia and Flux adaptation of the python package aocr.py https://github.com/emedvedev/attention-ocr using Seq2seq with Attention from https://github.com/merckxiaan/flux-seq2seq
 
 The scope at the moment is only numeric digits 0-9
 
